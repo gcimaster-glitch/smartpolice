@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スマートポリス - 契約者管理システム</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Enhanced form input styling with better border visibility */
+        .form-input {
+            border: 2px solid #d1d5db !important;
+            transition: border-color 0.2s ease-in-out;
+        }
+        
+        .form-input:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
+        
+        .form-input:hover {
+            border-color: #9ca3af !important;
+        }
+        
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Status badge colors */
+        .status-active { background-color: #dcfce7; color: #166534; }
+        .status-pending { background-color: #fef3c7; color: #92400e; }
+        .status-expired { background-color: #fee2e2; color: #991b1b; }
+        
+        /* Animation for modals */
+        .modal-enter {
+            animation: modalEnter 0.2s ease-out;
+        }
+        
+        @keyframes modalEnter {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header with improved navigation layout -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo and title -->
+                <div class="flex items-center">
+                    <i class="fas fa-shield-alt text-blue-600 text-2xl mr-3"></i>
+                    <h1 class="text-2xl font-bold text-gray-900">スマートポリス</h1>
+                    <span class="ml-2 text-sm text-gray-500">契約者管理システム</span>
+                </div>
+                
+                <!-- Navigation menu with dropdown for management functions -->
+                <nav class="flex items-center space-x-4">
+                    <!-- Main navigation buttons -->
+                    <button id="add-client-btn" 
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        <i class="fas fa-user-plus mr-2"></i>契約者追加
+                    </button>
+                    
+                    <!-- Management dropdown menu -->
+                    <div class="relative">
+                        <button id="management-dropdown-btn"
+                            class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium flex items-center">
+                            <i class="fas fa-cog mr-2"></i>管理
+                            <i class="fas fa-chevron-down ml-2 text-sm"></i>
+                        </button>
+                        
+                        <!-- Dropdown menu -->
+                        <div id="management-dropdown" 
+                            class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50 hidden">
+                            <div class="py-1">
+                                <button id="bulk-import-btn" 
+                                    class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-upload mr-2"></i>一括インポート
+                                </button>
+                                <button id="export-btn" 
+                                    class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-download mr-2"></i>データエクスポート
+                                </button>
+                                <button id="policy-management-btn" 
+                                    class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-file-contract mr-2"></i>保険契約管理
+                                </button>
+                                <button id="report-btn" 
+                                    class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-chart-bar mr-2"></i>レポート生成
+                                </button>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <button id="settings-btn" 
+                                    class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-cog mr-2"></i>システム設定
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Search and filters -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+            <div class="flex flex-col lg:flex-row gap-4">
+                <div class="flex-1">
+                    <input type="text" id="search-input" 
+                        placeholder="契約者名、契約番号、保険種別で検索..."
+                        class="form-input w-full px-4 py-3 rounded-lg bg-white">
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <select id="status-filter" class="form-input px-4 py-3 rounded-lg bg-white">
+                        <option value="">全ステータス</option>
+                        <option value="有効">有効</option>
+                        <option value="保留">保留</option>
+                        <option value="期限切れ">期限切れ</option>
+                        <option value="解約">解約</option>
+                    </select>
+                    <select id="insurance-type-filter" class="form-input px-4 py-3 rounded-lg bg-white">
+                        <option value="">全保険種別</option>
+                        <option value="自動車保険">自動車保険</option>
+                        <option value="生命保険">生命保険</option>
+                        <option value="火災保険">火災保険</option>
+                        <option value="医療保険">医療保険</option>
+                        <option value="その他">その他</option>
+                    </select>
+                    <button id="clear-filters" 
+                        class="px-6 py-3 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-users text-blue-500 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">総契約者数</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="total-clients">248</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-file-contract text-green-500 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">有効契約数</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="active-contracts">187</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">期限切れ近い</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="expiring-soon">23</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-yen-sign text-purple-500 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">月間保険料</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="monthly-premium">¥2.4M</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clients table -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">契約者一覧</h3>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                契約者情報
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                保険種別
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                契約期間
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                保険料
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                ステータス
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                操作
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="clients-tbody" class="bg-white divide-y divide-gray-200">
+                        <!-- Client data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- No results message -->
+            <div id="no-results" class="text-center py-12 hidden">
+                <i class="fas fa-search text-gray-400 text-4xl mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-600 mb-2">契約者が見つかりません</h3>
+                <p class="text-gray-500">検索条件を変更するか、新しい契約者を追加してください。</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Client Form Modal -->
+    <div id="client-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar modal-enter">
+                <!-- Enhanced modal header with top close/cancel buttons -->
+                <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                    <div class="flex items-center justify-between">
+                        <h2 id="modal-title" class="text-xl font-semibold text-gray-900">契約者を追加</h2>
+                        <div class="flex items-center space-x-3">
+                            <button id="modal-cancel-top" 
+                                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">
+                                <i class="fas fa-times mr-2"></i>キャンセル
+                            </button>
+                            <button id="modal-close-top" 
+                                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">
+                                <i class="fas fa-times mr-2"></i>閉じる
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal content -->
+                <form id="client-form" class="p-6 space-y-6">
+                    <input type="hidden" id="edit-client-id">
+                    
+                    <!-- Basic Information -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">基本情報</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="client-name" class="block text-sm font-medium text-gray-700 mb-2">
+                                    氏名 <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="client-name" required
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-white" 
+                                    placeholder="契約者氏名を入力">
+                            </div>
+                            
+                            <div>
+                                <label for="client-kana" class="block text-sm font-medium text-gray-700 mb-2">
+                                    氏名（カナ）
+                                </label>
+                                <input type="text" id="client-kana"
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-white" 
+                                    placeholder="セイヤク シャ">
+                            </div>
+                            
+                            <div>
+                                <label for="client-phone" class="block text-sm font-medium text-gray-700 mb-2">
+                                    電話番号 <span class="text-red-500">*</span>
+                                </label>
+                                <input type="tel" id="client-phone" required
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-white" 
+                                    placeholder="03-1234-5678">
+                            </div>
+                            
+                            <div>
+                                <label for="client-email" class="block text-sm font-medium text-gray-700 mb-2">
+                                    メールアドレス
+                                </label>
+                                <input type="email" id="client-email"
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-white" 
+                                    placeholder="client@example.com">
+                            </div>
+                            
+                            <div>
+                                <label for="client-birthday" class="block text-sm font-medium text-gray-700 mb-2">
+                                    生年月日
+                                </label>
+                                <input type="date" id="client-birthday"
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-white">
+                            </div>
+                            
+                            <div>
+                                <label for="client-gender" class="block text-sm font-medium text-gray-700 mb-2">
+                                    性別
+                                </label>
+                                <select id="client-gender" class="form-input w-full px-4 py-3 rounded-lg bg-white">
+                                    <option value="">選択してください</option>
+                                    <option value="男性">男性</option>
+                                    <option value="女性">女性</option>
+                                    <option value="その他">その他</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Address Information -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">住所情報</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label for="client-postal" class="block text-sm font-medium text-gray-700 mb-2">
+                                    郵便番号
+                                </label>
+                                <input type="text" id="client-postal"
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-white" 
+                                    placeholder="123-4567">
+                            </div>
+                            
+                            <div class="md:col-span-2">
+                                <label for="client-address" class="block text-sm font-medium text-gray-700 mb-2">
+                                    住所 <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="client-address" required
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-white" 
+                                    placeholder="東京都渋谷区...">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Insurance Information -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">保険契約情報</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="insurance-type" class="block text-sm font-medium text-gray-700 mb-2">
+                                    保険種別 <span class="text-red-500">*</span>
+                                </label>
+                                <select id="insurance-type" required
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-white">
+                                    <option value="">保険種別を選択</option>
+                                    <option value="自動車保険">自動車保険</option>
+                                    <option value="生命保険">生命保険</option>
+                                    <option value="火災保険">火災保険</option>
+                                    <option value="医療保険">医療保険</option>
+                                    <option value="その他">その他</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="contract-number" class="block text-sm font-medium text-gray-700 mb-2">
+                                    契約番号 <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="contract-number" required
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-white" 
+                                    placeholder="SP-2024-0001">
+                            </div>
+                            
+                            <div>
+                                <label for="contract-start" class="block text-sm font-medium text-gray-700 mb-2">
+                                    契約開始日 <span class="text-red-500">*</span>
+                                </label>
+                                <input type="date" id="contract-start" required
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-white">
+                            </div>
+                            
+                            <div>
+                                <label for="contract-end" class="block text-sm font-medium text-gray-700 mb-2">
+                                    契約終了日 <span class="text-red-500">*</span>
+                                </label>
+                                <input type="date" id="contract-end" required
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-white">
+                            </div>
+                            
+                            <div>
+                                <label for="monthly-premium" class="block text-sm font-medium text-gray-700 mb-2">
+                                    月額保険料 <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" id="monthly-premium" required min="0" step="100"
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-white" 
+                                    placeholder="10000">
+                            </div>
+                            
+                            <div>
+                                <label for="contract-status" class="block text-sm font-medium text-gray-700 mb-2">
+                                    契約ステータス <span class="text-red-500">*</span>
+                                </label>
+                                <select id="contract-status" required
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-white">
+                                    <option value="">ステータスを選択</option>
+                                    <option value="有効">有効</option>
+                                    <option value="保留">保留</option>
+                                    <option value="期限切れ">期限切れ</option>
+                                    <option value="解約">解約</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Notes -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">備考</h3>
+                        <div>
+                            <label for="client-notes" class="block text-sm font-medium text-gray-700 mb-2">
+                                備考・特記事項
+                            </label>
+                            <textarea id="client-notes" rows="4"
+                                class="form-input w-full px-4 py-3 rounded-lg bg-white" 
+                                placeholder="特記事項や備考を入力してください"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Bottom buttons -->
+                    <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                        <button type="button" id="modal-cancel-bottom" 
+                            class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                            キャンセル
+                        </button>
+                        <button type="submit" id="submit-button"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Detail Modal -->
+    <div id="detail-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar modal-enter">
+                <!-- Enhanced detail modal header with top close button -->
+                <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-semibold text-gray-900">契約者詳細</h2>
+                        <div class="flex items-center space-x-3">
+                            <button id="detail-close-top" 
+                                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">
+                                <i class="fas fa-times mr-2"></i>閉じる
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detail content -->
+                <div class="p-6">
+                    <div id="detail-content"></div>
+                    
+                    <!-- Bottom buttons -->
+                    <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                        <button id="detail-edit" 
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-edit mr-2"></i>編集
+                        </button>
+                        <button id="detail-close-bottom" 
+                            class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                            閉じる
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let clients = [];
+        let currentClient = null;
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSampleData();
+            bindEvents();
+            renderClients();
+            updateStatistics();
+        });
+        
+        // Sample data
+        function loadSampleData() {
+            clients = [
+                {
+                    id: 1,
+                    name: '田中 太郎',
+                    kana: 'タナカ タロウ',
+                    phone: '03-1234-5678',
+                    email: 'tanaka@example.com',
+                    birthday: '1980-05-15',
+                    gender: '男性',
+                    postal: '150-0002',
+                    address: '東京都渋谷区渋谷1-1-1',
+                    insuranceType: '自動車保険',
+                    contractNumber: 'SP-2024-0001',
+                    contractStart: '2024-01-01',
+                    contractEnd: '2024-12-31',
+                    monthlyPremium: 12000,
+                    status: '有効',
+                    notes: '優良顧客、長期契約希望'
+                },
+                {
+                    id: 2,
+                    name: '佐藤 花子',
+                    kana: 'サトウ ハナコ',
+                    phone: '03-2345-6789',
+                    email: 'sato@example.com',
+                    birthday: '1975-03-20',
+                    gender: '女性',
+                    postal: '160-0023',
+                    address: '東京都新宿区西新宿2-2-2',
+                    insuranceType: '生命保険',
+                    contractNumber: 'SP-2024-0002',
+                    contractStart: '2024-02-01',
+                    contractEnd: '2025-01-31',
+                    monthlyPremium: 8500,
+                    status: '有効',
+                    notes: ''
+                },
+                {
+                    id: 3,
+                    name: '鈴木 一郎',
+                    kana: 'スズキ イチロウ',
+                    phone: '03-3456-7890',
+                    email: 'suzuki@example.com',
+                    birthday: '1990-12-10',
+                    gender: '男性',
+                    postal: '105-0001',
+                    address: '東京都港区虎ノ門3-3-3',
+                    insuranceType: '火災保険',
+                    contractNumber: 'SP-2024-0003',
+                    contractStart: '2023-06-01',
+                    contractEnd: '2024-05-31',
+                    monthlyPremium: 6800,
+                    status: '期限切れ',
+                    notes: '契約更新要確認'
+                },
+                {
+                    id: 4,
+                    name: '高橋 美智子',
+                    kana: 'タカハシ ミチコ',
+                    phone: '03-4567-8901',
+                    email: 'takahashi@example.com',
+                    birthday: '1985-07-30',
+                    gender: '女性',
+                    postal: '100-0005',
+                    address: '東京都千代田区丸の内4-4-4',
+                    insuranceType: '医療保険',
+                    contractNumber: 'SP-2024-0004',
+                    contractStart: '2024-03-15',
+                    contractEnd: '2025-03-14',
+                    monthlyPremium: 15000,
+                    status: '保留',
+                    notes: '保険料支払い遅延中'
+                }
+            ];
+        }
+        
+        // Event bindings
+        function bindEvents() {
+            // Management dropdown
+            const managementDropdownBtn = document.getElementById('management-dropdown-btn');
+            const managementDropdown = document.getElementById('management-dropdown');
+            
+            managementDropdownBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                managementDropdown.classList.toggle('hidden');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', () => {
+                managementDropdown.classList.add('hidden');
+            });
+            
+            // Modal controls - Client form modal
+            document.getElementById('add-client-btn').addEventListener('click', () => openClientModal());
+            
+            // Top buttons for client modal
+            document.getElementById('modal-close-top').addEventListener('click', closeClientModal);
+            document.getElementById('modal-cancel-top').addEventListener('click', closeClientModal);
+            
+            // Bottom buttons for client modal
+            document.getElementById('modal-cancel-bottom').addEventListener('click', closeClientModal);
+            
+            // Detail modal controls
+            // Top button for detail modal
+            document.getElementById('detail-close-top').addEventListener('click', closeDetailModal);
+            
+            // Bottom buttons for detail modal
+            document.getElementById('detail-close-bottom').addEventListener('click', closeDetailModal);
+            document.getElementById('detail-edit').addEventListener('click', () => {
+                closeDetailModal();
+                openClientModal(currentClient);
+            });
+            
+            // Form submission
+            document.getElementById('client-form').addEventListener('submit', handleFormSubmit);
+            
+            // Search and filters
+            document.getElementById('search-input').addEventListener('input', applyFilters);
+            document.getElementById('status-filter').addEventListener('change', applyFilters);
+            document.getElementById('insurance-type-filter').addEventListener('change', applyFilters);
+            document.getElementById('clear-filters').addEventListener('click', clearFilters);
+            
+            // Close modal when clicking outside
+            document.getElementById('client-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'client-modal') closeClientModal();
+            });
+            
+            document.getElementById('detail-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'detail-modal') closeDetailModal();
+            });
+        }
+        
+        // Render clients
+        function renderClients() {
+            const tbody = document.getElementById('clients-tbody');
+            const noResults = document.getElementById('no-results');
+            
+            // Get filtered clients
+            const filteredClients = getFilteredClients();
+            
+            if (filteredClients.length === 0) {
+                tbody.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            }
+            
+            noResults.classList.add('hidden');
+            
+            tbody.innerHTML = filteredClients.map(client => {
+                const statusClass = {
+                    '有効': 'status-active',
+                    '保留': 'status-pending',
+                    '期限切れ': 'status-expired',
+                    '解約': 'status-expired'
+                }[client.status] || 'status-pending';
+                
+                const contractEndDate = new Date(client.contractEnd);
+                const today = new Date();
+                const daysUntilExpiry = Math.ceil((contractEndDate - today) / (1000 * 60 * 60 * 24));
+                
+                return `
+                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="showClientDetail(${client.id})">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">${client.name}</div>
+                                    <div class="text-sm text-gray-500">${client.contractNumber}</div>
+                                    <div class="text-sm text-gray-500">${client.phone}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${client.insuranceType}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${formatDate(client.contractStart)}</div>
+                            <div class="text-sm text-gray-500">～ ${formatDate(client.contractEnd)}</div>
+                            ${daysUntilExpiry > 0 && daysUntilExpiry <= 30 ? 
+                                `<div class="text-xs text-orange-600">あと${daysUntilExpiry}日</div>` : ''}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">¥${client.monthlyPremium.toLocaleString()}/月</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full ${statusClass}">
+                                ${client.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button onclick="event.stopPropagation(); openClientModal(${JSON.stringify(client).replace(/"/g, '&quot;')})" 
+                                    class="text-blue-600 hover:text-blue-900"
+                                    title="編集">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="event.stopPropagation(); deleteClient(${client.id})" 
+                                    class="text-red-600 hover:text-red-900"
+                                    title="削除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Utility functions
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
+        }
+        
+        function getFilteredClients() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            const insuranceTypeFilter = document.getElementById('insurance-type-filter').value;
+            
+            return clients.filter(client => {
+                const matchesSearch = !searchTerm || 
+                    client.name.toLowerCase().includes(searchTerm) ||
+                    client.contractNumber.toLowerCase().includes(searchTerm) ||
+                    client.insuranceType.toLowerCase().includes(searchTerm) ||
+                    (client.kana && client.kana.toLowerCase().includes(searchTerm)) ||
+                    (client.phone && client.phone.includes(searchTerm)) ||
+                    (client.email && client.email.toLowerCase().includes(searchTerm));
+                    
+                const matchesStatus = !statusFilter || client.status === statusFilter;
+                const matchesInsuranceType = !insuranceTypeFilter || client.insuranceType === insuranceTypeFilter;
+                
+                return matchesSearch && matchesStatus && matchesInsuranceType;
+            });
+        }
+        
+        // Modal functions
+        function openClientModal(client = null) {
+            const modal = document.getElementById('client-modal');
+            const title = document.getElementById('modal-title');
+            const submitButton = document.getElementById('submit-button');
+            const form = document.getElementById('client-form');
+            
+            currentClient = client;
+            
+            if (client) {
+                title.textContent = '契約者を編集';
+                submitButton.textContent = '更新';
+                populateForm(client);
+            } else {
+                title.textContent = '契約者を追加';
+                submitButton.textContent = '保存';
+                form.reset();
+                document.getElementById('edit-client-id').value = '';
+            }
+            
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeClientModal() {
+            const modal = document.getElementById('client-modal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            currentClient = null;
+        }
+        
+        function closeDetailModal() {
+            const modal = document.getElementById('detail-modal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            currentClient = null;
+        }
+        
+        function populateForm(client) {
+            document.getElementById('edit-client-id').value = client.id;
+            document.getElementById('client-name').value = client.name || '';
+            document.getElementById('client-kana').value = client.kana || '';
+            document.getElementById('client-phone').value = client.phone || '';
+            document.getElementById('client-email').value = client.email || '';
+            document.getElementById('client-birthday').value = client.birthday || '';
+            document.getElementById('client-gender').value = client.gender || '';
+            document.getElementById('client-postal').value = client.postal || '';
+            document.getElementById('client-address').value = client.address || '';
+            document.getElementById('insurance-type').value = client.insuranceType || '';
+            document.getElementById('contract-number').value = client.contractNumber || '';
+            document.getElementById('contract-start').value = client.contractStart || '';
+            document.getElementById('contract-end').value = client.contractEnd || '';
+            document.getElementById('monthly-premium').value = client.monthlyPremium || '';
+            document.getElementById('contract-status').value = client.status || '';
+            document.getElementById('client-notes').value = client.notes || '';
+        }
+        
+        function showClientDetail(clientId) {
+            const client = clients.find(c => c.id === clientId);
+            if (!client) return;
+            
+            currentClient = client;
+            
+            const contractEndDate = new Date(client.contractEnd);
+            const today = new Date();
+            const daysUntilExpiry = Math.ceil((contractEndDate - today) / (1000 * 60 * 60 * 24));
+            
+            const statusClass = {
+                '有効': 'status-active',
+                '保留': 'status-pending',
+                '期限切れ': 'status-expired',
+                '解約': 'status-expired'
+            }[client.status] || 'status-pending';
+            
+            document.getElementById('detail-content').innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900">${client.name}</h3>
+                            <p class="text-gray-600">${client.kana || ''}</p>
+                        </div>
+                        <span class="px-3 py-1 text-sm font-medium rounded-full ${statusClass}">
+                            ${client.status}
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-3">基本情報</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">電話番号:</span>
+                                    <span class="font-medium">${client.phone || '-'}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">メール:</span>
+                                    <span class="font-medium">${client.email || '-'}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">生年月日:</span>
+                                    <span class="font-medium">${client.birthday ? formatDate(client.birthday) : '-'}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">性別:</span>
+                                    <span class="font-medium">${client.gender || '-'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-3">住所情報</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">郵便番号:</span>
+                                    <span class="font-medium">${client.postal || '-'}</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">住所:</span>
+                                    <div class="font-medium mt-1">${client.address || '-'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-3">保険契約情報</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">保険種別:</span>
+                                    <span class="font-medium">${client.insuranceType}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">契約番号:</span>
+                                    <span class="font-medium">${client.contractNumber}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">月額保険料:</span>
+                                    <span class="font-medium text-lg text-blue-600">¥${client.monthlyPremium.toLocaleString()}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">契約開始日:</span>
+                                    <span class="font-medium">${formatDate(client.contractStart)}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">契約終了日:</span>
+                                    <span class="font-medium">${formatDate(client.contractEnd)}</span>
+                                </div>
+                                ${daysUntilExpiry > 0 && daysUntilExpiry <= 30 ? 
+                                    `<div class="text-orange-600 font-medium">⚠️ 契約期限まであと${daysUntilExpiry}日</div>` : 
+                                    daysUntilExpiry <= 0 ? 
+                                    `<div class="text-red-600 font-medium">⚠️ 契約期限が過ぎています</div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${client.notes ? `
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">備考</h4>
+                            <p class="text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg">${client.notes}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Form handling
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('client-name').value,
+                kana: document.getElementById('client-kana').value,
+                phone: document.getElementById('client-phone').value,
+                email: document.getElementById('client-email').value,
+                birthday: document.getElementById('client-birthday').value,
+                gender: document.getElementById('client-gender').value,
+                postal: document.getElementById('client-postal').value,
+                address: document.getElementById('client-address').value,
+                insuranceType: document.getElementById('insurance-type').value,
+                contractNumber: document.getElementById('contract-number').value,
+                contractStart: document.getElementById('contract-start').value,
+                contractEnd: document.getElementById('contract-end').value,
+                monthlyPremium: parseInt(document.getElementById('monthly-premium').value),
+                status: document.getElementById('contract-status').value,
+                notes: document.getElementById('client-notes').value
+            };
+            
+            const editId = document.getElementById('edit-client-id').value;
+            
+            if (editId) {
+                // Update existing client
+                const clientIndex = clients.findIndex(c => c.id === parseInt(editId));
+                if (clientIndex !== -1) {
+                    clients[clientIndex] = { ...clients[clientIndex], ...formData };
+                }
+            } else {
+                // Add new client
+                const newClient = {
+                    id: Math.max(0, ...clients.map(c => c.id)) + 1,
+                    ...formData
+                };
+                clients.push(newClient);
+            }
+            
+            renderClients();
+            updateStatistics();
+            closeClientModal();
+        }
+        
+        // Delete client
+        function deleteClient(clientId) {
+            if (confirm('この契約者を削除してもよろしいですか？')) {
+                clients = clients.filter(c => c.id !== clientId);
+                renderClients();
+                updateStatistics();
+            }
+        }
+        
+        // Filter functions
+        function applyFilters() {
+            renderClients();
+        }
+        
+        function clearFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('status-filter').value = '';
+            document.getElementById('insurance-type-filter').value = '';
+            renderClients();
+        }
+        
+        // Update statistics
+        function updateStatistics() {
+            const totalClients = clients.length;
+            const activeContracts = clients.filter(c => c.status === '有効').length;
+            
+            // Calculate expiring soon (within 30 days)
+            const today = new Date();
+            const expiringSoon = clients.filter(client => {
+                const contractEnd = new Date(client.contractEnd);
+                const daysUntilExpiry = Math.ceil((contractEnd - today) / (1000 * 60 * 60 * 24));
+                return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
+            }).length;
+            
+            // Calculate total monthly premium for active contracts
+            const monthlyPremium = clients
+                .filter(c => c.status === '有効')
+                .reduce((sum, c) => sum + c.monthlyPremium, 0);
+            
+            document.getElementById('total-clients').textContent = totalClients;
+            document.getElementById('active-contracts').textContent = activeContracts;
+            document.getElementById('expiring-soon').textContent = expiringSoon;
+            document.getElementById('monthly-premium').textContent = `¥${(monthlyPremium / 1000).toFixed(1)}K`;
+        }
+    </script>
+</body>
+</html>
