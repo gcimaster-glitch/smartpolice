@@ -53,6 +53,21 @@
             outline: 2px solid #2563eb;
             outline-offset: 2px;
         }
+        
+        /* 🎯 改善1: 入力フォームの境界線視認性向上 */
+        .enhanced-input {
+            border: 2px solid #d1d5db !important;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        
+        .enhanced-input:hover {
+            border-color: #9ca3af !important;
+        }
+        
+        .enhanced-input:focus {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+        }
 
         /* ====================
          * 📱 モバイル専用UI強化
@@ -352,43 +367,60 @@
         </div>
     </header>
 
-    <!-- ナビゲーション（固定・先祖返り不可） -->
+    <!-- 🎯 改善3: ナビゲーションメニューの幅オーバーフロー修正 -->
     <nav class="bg-primary no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="hidden lg:flex space-x-8 py-3">
-                <a href="/c/dashboard" class="nav-link text-white border-b-2 border-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="dashboard">
-                    <i class="fas fa-home mr-2"></i>ホーム
-                </a>
-                <a href="/c/announcements" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="announcements">
-                    <i class="fas fa-bullhorn mr-2"></i>お知らせ
-                </a>
-                <a href="/c/messages" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="messages">
-                    <i class="fas fa-comments mr-2"></i>相談・連絡
-                </a>
-                <a href="/c/services" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="services">
-                    <i class="fas fa-concierge-bell mr-2"></i>申請（サービス）
-                </a>
-                <a href="/c/materials" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="materials">
-                    <i class="fas fa-folder-open mr-2"></i>資料室
-                </a>
-                <a href="/c/seminars" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="seminars">
-                    <i class="fas fa-calendar-alt mr-2"></i>セミナー
-                </a>
-                <a href="/c/billing" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="billing">
-                    <i class="fas fa-receipt mr-2"></i>請求・お支払い
-                </a>
-                <a href="/c/company" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="company">
-                    <i class="fas fa-building mr-2"></i>自社情報
-                </a>
-                <a href="/c/users" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded client-admin-only" data-page="users">
-                    <i class="fas fa-users mr-2"></i>ユーザー管理
-                </a>
-                <a href="/c/reports" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded client-admin-only" data-page="reports">
-                    <i class="fas fa-chart-line mr-2"></i>レポート・分析
-                </a>
-                <a href="/c/settings" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="settings">
-                    <i class="fas fa-cog mr-2"></i>設定
-                </a>
+            <div class="hidden lg:flex items-center justify-between py-3">
+                <!-- 主要ナビゲーション -->
+                <div class="flex space-x-6">
+                    <a href="/c/dashboard" class="nav-link text-white border-b-2 border-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="dashboard">
+                        <i class="fas fa-home mr-2"></i>ホーム
+                    </a>
+                    <a href="/c/announcements" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="announcements">
+                        <i class="fas fa-bullhorn mr-2"></i>お知らせ
+                    </a>
+                    <a href="/c/messages" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="messages">
+                        <i class="fas fa-comments mr-2"></i>相談・連絡
+                    </a>
+                    <a href="/c/services" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="services">
+                        <i class="fas fa-concierge-bell mr-2"></i>申請
+                    </a>
+                    <a href="/c/materials" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="materials">
+                        <i class="fas fa-folder-open mr-2"></i>資料室
+                    </a>
+                    <a href="/c/seminars" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="seminars">
+                        <i class="fas fa-calendar-alt mr-2"></i>セミナー
+                    </a>
+                    <a href="/c/billing" class="nav-link text-blue-100 hover:text-white px-2 pb-1 text-sm font-medium whitespace-nowrap transition-colors focus-ring rounded" data-page="billing">
+                        <i class="fas fa-receipt mr-2"></i>請求
+                    </a>
+                </div>
+                
+                <!-- 管理機能ドロップダウン -->
+                <div class="relative">
+                    <button id="admin-dropdown-btn" class="flex items-center px-2 pb-1 text-sm font-medium text-blue-100 hover:text-white transition-colors focus-ring rounded">
+                        <i class="fas fa-cog mr-2"></i>管理
+                        <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                    </button>
+                    
+                    <div id="admin-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border z-50 hidden">
+                        <div class="py-1">
+                            <a href="/c/company" class="nav-link block px-4 py-2 text-gray-700 hover:bg-gray-50 text-sm transition-colors" data-page="company">
+                                <i class="fas fa-building mr-2"></i>自社情報
+                            </a>
+                            <a href="/c/users" class="nav-link block px-4 py-2 text-gray-700 hover:bg-gray-50 text-sm transition-colors client-admin-only" data-page="users">
+                                <i class="fas fa-users mr-2"></i>ユーザー管理
+                            </a>
+                            <a href="/c/reports" class="nav-link block px-4 py-2 text-gray-700 hover:bg-gray-50 text-sm transition-colors client-admin-only" data-page="reports">
+                                <i class="fas fa-chart-line mr-2"></i>レポート・分析
+                            </a>
+                            <div class="border-t border-gray-100 my-1"></div>
+                            <a href="/c/settings" class="nav-link block px-4 py-2 text-gray-700 hover:bg-gray-50 text-sm transition-colors" data-page="settings">
+                                <i class="fas fa-cog mr-2"></i>設定
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -637,7 +669,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">状態</label>
-                        <select id="status-filter" class="w-full border-gray-300 rounded-md focus-ring">
+                        <select id="status-filter" class="w-full border-gray-300 rounded-md focus-ring enhanced-input">
                             <option value="">すべて</option>
                             <option value="received">受付中</option>
                             <option value="in-progress">対応中</option>
@@ -646,7 +678,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">優先度</label>
-                        <select id="priority-filter" class="w-full border-gray-300 rounded-md focus-ring">
+                        <select id="priority-filter" class="w-full border-gray-300 rounded-md focus-ring enhanced-input">
                             <option value="">すべて</option>
                             <option value="high">高</option>
                             <option value="medium">中</option>
@@ -655,7 +687,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">期間</label>
-                        <select id="date-filter" class="w-full border-gray-300 rounded-md focus-ring">
+                        <select id="date-filter" class="w-full border-gray-300 rounded-md focus-ring enhanced-input">
                             <option value="">すべて</option>
                             <option value="today">今日</option>
                             <option value="week">1週間</option>
@@ -664,7 +696,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">検索</label>
-                        <input type="text" id="search-messages" placeholder="件名・内容で検索" class="w-full border-gray-300 rounded-md focus-ring">
+                        <input type="text" id="search-messages" placeholder="件名・内容で検索" class="w-full border-gray-300 rounded-md focus-ring enhanced-input">
                     </div>
                 </div>
             </div>
@@ -839,12 +871,19 @@
             <div id="new-message-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
                 <div class="relative top-20 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white">
                     <div class="mt-3">
-                        <!-- モーダルヘッダー -->
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-2xl font-bold text-gray-900">新規相談</h3>
-                            <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600 transition-colors focus-ring rounded">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
+                        <!-- 🎯 改善2: モーダル上部にクローズ・キャンセルボタンを追加 -->
+                        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 -mx-5 -mt-3 rounded-t-md mb-6">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-2xl font-bold text-gray-900">新規相談</h3>
+                                <div class="flex items-center space-x-3">
+                                    <button id="cancel-modal-top-btn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors enhanced-input">
+                                        <i class="fas fa-times mr-2"></i>キャンセル
+                                    </button>
+                                    <button id="close-modal-btn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors enhanced-input">
+                                        <i class="fas fa-times mr-2"></i>閉じる
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- 新規相談フォーム -->
@@ -978,12 +1017,16 @@
             <div id="message-detail-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
                 <div class="relative top-20 mx-auto p-5 border w-full max-w-5xl shadow-lg rounded-md bg-white">
                     <div class="mt-3">
-                        <!-- モーダルヘッダー -->
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-2xl font-bold text-gray-900">相談詳細</h3>
-                            <button id="close-detail-modal-btn" class="text-gray-400 hover:text-gray-600 transition-colors focus-ring rounded">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
+                        <!-- 🎯 改善2: モーダル上部にクローズボタンを追加 -->
+                        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 -mx-5 -mt-3 rounded-t-md mb-6">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-2xl font-bold text-gray-900">相談詳細</h3>
+                                <div class="flex items-center">
+                                    <button id="close-detail-modal-btn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors enhanced-input">
+                                        <i class="fas fa-times mr-2"></i>閉じる
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- 詳細内容（動的に更新） -->
@@ -2485,6 +2528,29 @@
                         mobileNav.classList.toggle('hidden');
                     });
                 }
+                
+                // 🎯 改善3: 管理ドロップダウンメニューの制御
+                this.setupAdminDropdown();
+            }
+            
+            // 管理ドロップダウン設定
+            setupAdminDropdown() {
+                const adminDropdownBtn = document.getElementById('admin-dropdown-btn');
+                const adminDropdown = document.getElementById('admin-dropdown');
+                
+                if (adminDropdownBtn && adminDropdown) {
+                    adminDropdownBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        adminDropdown.classList.toggle('hidden');
+                    });
+                    
+                    // ドロップダウン外クリックで閉じる
+                    document.addEventListener('click', (e) => {
+                        if (!adminDropdownBtn.contains(e.target) && !adminDropdown.contains(e.target)) {
+                            adminDropdown.classList.add('hidden');
+                        }
+                    });
+                }
             }
 
             // 📱 強化されたモバイル機能設定
@@ -2766,8 +2832,12 @@
                     this.showNewMessageModal();
                 });
 
-                // モーダル閉じる
+                // 🎯 改善2: モーダル閉じる（複数ボタン対応）
                 document.getElementById('close-modal-btn')?.addEventListener('click', () => {
+                    this.hideNewMessageModal();
+                });
+                
+                document.getElementById('cancel-modal-top-btn')?.addEventListener('click', () => {
                     this.hideNewMessageModal();
                 });
 
